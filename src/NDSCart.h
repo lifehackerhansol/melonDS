@@ -356,6 +356,53 @@ private:
     bool BufferInitialized;
 };
 
+/*
+    SD host modes
+    Used with 0x51 command
+*/
+enum CartTTSDHostMode {
+    SD_HOST_NORESPONSE = 0,
+    SD_HOST_READ_4B = 1,
+    SD_HOST_READ_4B_MULTI = 2,  // use mode 3 to continue this read
+    SD_HOST_NEXT_4B = 3,
+    SD_HOST_SEND_CLK = 4,
+    SD_HOST_SEND_STOP_CLK = 5,
+    SD_HOST_READ_DATABLOCK = 6,
+    SD_HOST_NEXT_DATABLOCK = 7,
+    SD_HOST_CMD17_READ_DATA = 8,     // Send SDIO CMD17 & read data
+    SD_HOST_CMD18_READ_DATA = 9,     // Send SDIO CMD18 & read data until stop
+    SD_HOST_COMMIT_FIFO_DATA = 0xA,  // commit data in FIFO to SD card
+    SD_HOST_CMD24_WRITE_DATA = 0xB,  // Send SDIO CMD24 & send data in SRAM buffer
+    SD_HOST_WAIT_BUSY = 0xC          // wait until data transfer ends
+};
+
+// CartTT -- unlicensed DSTT 'cart' (NDSCartTT.cpp)
+class CartTT : public CartSD
+{
+public:
+    CartTT(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+    ~CartTT() override;
+
+    void Reset() override;
+
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+    void ROMCommandFinish(const u8* cmd, u8* data, u32 len) override;
+
+private:
+    inline u32 GetAdjustedSector(u32 sector) const
+    {
+        return IsFat32 ? sector : sector >> 9;
+    }
+
+    bool IsFat32;
+    u8 CurrentSDIOCommand;
+    CartTTSDHostMode CurrentSDHostMode;
+    u8 R2ResponseCount;
+    u32 RequestedSectorAddress;
+    u32 CurrentSDIOParameter;
+};
+
 class NDSCartSlot
 {
 public:
