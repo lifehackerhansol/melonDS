@@ -45,7 +45,8 @@ enum CartType
     RetailIR = 0x103,
     RetailBT = 0x104,
     Homebrew = 0x201,
-    UnlicensedR4 = 0x301
+    UnlicensedR4 = 0x301,
+    PowerSaves = 0x401
 };
 
 class NDSCartSlot;
@@ -355,6 +356,38 @@ private:
     CartR4Language CartLanguage;
     bool BufferInitialized;
 };
+
+#ifdef POWERSAVES_ENABLED
+#include <hidapi/hidapi.h>
+
+#define POWERSAVES_VID 0x1C1A
+#define POWERSAVES_PID 0x03D5
+
+// CartPowerSaves -- Datel PowerSaves AS233 (NDSCartPowerSaves.cpp)
+enum CartPowerSavesCmdType
+{
+    CartPowerSavesCmdType_TEST = 0x02,
+    CartPowerSavesCmdType_SWITCH_MODE = 0x10,
+    CartPowerSavesCmdType_ROM_MODE = 0x11,
+    CartPowerSavesCmdType_SPI_MODE = 0x12,
+    CartPowerSavesCmdType_NTR = 0x13,
+    CartPowerSavesCmdType_CTR = 0x14,
+    CartPowerSavesCmdType_SPI = 0x15
+};
+
+class CartPowerSaves : public CartCommon
+{
+public:
+    CartPowerSaves(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, melonDS::NDSCart::CartType type, void* userdata);
+    ~CartPowerSaves() override;
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+private:
+    hid_device* device;
+
+    int SendMessage(CartPowerSavesCmdType type, const u8* cmd, u16 len, u16 len_response);
+    int ReadCardData(const u8* cmd, u8* data, u32 len);
+};
+#endif
 
 class NDSCartSlot
 {

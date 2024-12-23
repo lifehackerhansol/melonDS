@@ -89,6 +89,14 @@ if (ENABLE_OGLRENDERER)
     target_compile_definitions(core PUBLIC OGLRENDERER_ENABLED)
 endif()
 
+if (ENABLE_POWERSAVES)
+    include(FindPkgConfig)
+    pkg_check_modules(hidapi REQUIRED IMPORTED_TARGET hidapi)
+    target_sources(core PRIVATE NDSCartPowerSaves.cpp)
+    target_compile_definitions(core PUBLIC POWERSAVES_ENABLED)
+    target_link_libraries(core PUBLIC hidapi)
+endif()
+
 if (ENABLE_JIT)
     enable_language(ASM)
 
