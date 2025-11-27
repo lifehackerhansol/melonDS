@@ -356,6 +356,23 @@ private:
     bool BufferInitialized;
 };
 
+// CartDSpico -- unlicensed DSpico 'cart' (NDSCartDSpico.cpp)
+class CartDSpico : public CartSD
+{
+public:
+    CartDSpico(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+    ~CartDSpico() override;
+
+    void Reset() override;
+
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+    void ROMCommandFinish(const u8* cmd, u8* data, u32 len) override;
+
+private:
+    u32 RequestedSectorAddress;
+};
+
 class NDSCartSlot
 {
 public:
