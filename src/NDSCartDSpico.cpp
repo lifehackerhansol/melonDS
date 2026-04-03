@@ -53,7 +53,7 @@ int CartDSpico::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const 
     if (CmdEncMode != 2)
         return CartCommon::ROMCommandStart(nds, cartslot, cmd, data, len);
     
-    Log(LogLevel::Debug, "DSpico: command %02X %02X %02X %02X %02X %02X %02X %02X (%d)\n", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7], len);
+    //Log(LogLevel::Debug, "DSpico: command %02X %02X %02X %02X %02X %02X %02X %02X (%d)\n", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7], len);
 
     switch (cmd[0])
     {
@@ -64,6 +64,10 @@ int CartDSpico::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const 
             memcpy(data, &ROM[addr & (ROMLength-1)], len);
             return 0;
         }
+    case 0xB8: /* Chip ID */
+        for (u32 pos = 0; pos < len; pos += 4)
+            *(u32*)&data[pos] = ChipID;
+        return 0;
     /* Starting custom card protocol */
     case 0xE3:
         {
@@ -74,7 +78,7 @@ int CartDSpico::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const 
             */
             u32 addr = (cmd[4]<<24) | (cmd[5]<<16) | (cmd[6]<<8) | cmd[7];
             RequestedSectorAddress = addr;
-            Log(LogLevel::Debug, "DSpico: requested SD sector read at %08X", addr);
+            Log(LogLevel::Debug, "DSpico: requested SD sector read at %08X\n", addr);
             return 0;
         }
     case 0xE4:
@@ -85,7 +89,7 @@ int CartDSpico::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const 
                 Return 0 if not ready, non-0 if ready
             */
             // always return true, since we're always ready
-            *data = 1;
+            *(u32*)data = 1;
             return 0;
         }
     case 0xE5: /* SD sector data read */
@@ -116,7 +120,7 @@ int CartDSpico::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const 
         */
         u32 addr = (cmd[4]<<24) | (cmd[5]<<16) | (cmd[6]<<8) | cmd[7];
         RequestedSectorAddress = addr;
-        Log(LogLevel::Debug, "DSpico: requested SD sector write at %08X", addr);
+        Log(LogLevel::Debug, "DSpico: requested SD sector write at %08X\n", addr);
         // Continue to write end.
         return 1;
     }
