@@ -45,6 +45,7 @@ add_library(core STATIC
     Mic.cpp
     NDS.cpp
     NDSCart.cpp
+    NDSCartEZP.cpp
     NDSCartR4.cpp
     Platform.h
     ROMList.h

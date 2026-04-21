@@ -356,6 +356,28 @@ private:
     bool BufferInitialized;
 };
 
+class CartEZP : public CartSD
+{
+public:
+    CartEZP(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+    void ROMCommandFinish(const u8* cmd, u8* data, u32 len) override;
+
+    void Reset() override;
+
+private:
+    u8 RomClusterMap[256];
+    u8 SaveClusterMap[256];
+    u8 Buffer[4096];
+    bool ClusterMapInitialized = false;
+    u32 RequestedFatMapSaveWriteAddress = 0;
+
+    void ReadSDFromClusterMap(u32 address, bool rom);
+    u32 SDFatMapSectorGet(bool rom, u32 address);
+};
+
 class NDSCartSlot
 {
 public:
