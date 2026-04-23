@@ -1708,6 +1708,12 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     std::unique_ptr<CartCommon> cart;
     std::unique_ptr<u8[]> sram = args ? std::move(args->SRAM) : nullptr;
     u32 sramlen = args ? args->SRAMLength : 0;
+    if (1)
+    {
+        std::optional<FATStorage> sdcard = args && args->SDCard ? std::make_optional<FATStorage>(std::move(*args->SDCard)) : std::nullopt;
+        cart = std::make_unique<CartM3Real>(std::move(cartrom), cartromsize, cartid, romparams, userdata, std::move(sdcard));
+    }
+    else
     if (homebrew)
     {
         std::optional<FATStorage> sdcard = args && args->SDCard ? std::make_optional<FATStorage>(std::move(*args->SDCard)) : std::nullopt;

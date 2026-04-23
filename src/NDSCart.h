@@ -356,6 +356,20 @@ private:
     bool BufferInitialized;
 };
 
+// CartM3Real -- unlicensed M3 DS Real 'cart' (NDSCartM3Real.cpp)
+class CartM3Real : public CartSD
+{
+public:
+    CartM3Real(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+    void Reset() override;
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+    void ROMCommandFinish(const u8* cmd, u8* data, u32 len) override;
+private:
+    u8 Buffer[512];
+    u32 RequestedSector;
+};
+
 class NDSCartSlot
 {
 public:
