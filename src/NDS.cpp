@@ -2340,8 +2340,8 @@ u8 NDS::ARM7Read8(u32 addr)
             if (!(PowerControl7 & (1<<1))) return 0;
             if (addr & 0x1) return Wifi.Read(addr-1) >> 8;
             return Wifi.Read(addr) & 0xFF;
-        }
-        break;
+        } else
+            return NDS::ARM7IORead8(addr);
 
     case 0x06000000:
     case 0x06800000:
@@ -2406,8 +2406,8 @@ u16 NDS::ARM7Read16(u32 addr)
         {
             if (!(PowerControl7 & (1<<1))) return 0;
             return Wifi.Read(addr);
-        }
-        break;
+        } else
+            return NDS::ARM7IORead16(addr);
 
     case 0x06000000:
     case 0x06800000:
@@ -2472,8 +2472,8 @@ u32 NDS::ARM7Read32(u32 addr)
         {
             if (!(PowerControl7 & (1<<1))) return 0;
             return Wifi.Read(addr) | (Wifi.Read(addr+2) << 16);
-        }
-        break;
+        } else
+            return NDS::ARM7IORead32(addr);
 
     case 0x06000000:
     case 0x06800000:
@@ -2658,10 +2658,6 @@ void NDS::ARM7Write32(u32 addr, u32 val)
         *(u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
         return;
 
-    case 0x04000000:
-        NDS::ARM7IOWrite32(addr, val);
-        return;
-
     case 0x04800000:
         if (addr < 0x04810000)
         {
@@ -2670,7 +2666,9 @@ void NDS::ARM7Write32(u32 addr, u32 val)
             Wifi.Write(addr+2, val >> 16);
             return;
         }
-        break;
+    case 0x04000000:
+        NDS::ARM7IOWrite32(addr, val);
+        return;
 
     case 0x06000000:
     case 0x06800000:
@@ -3831,6 +3829,15 @@ u8 NDS::ARM7IORead8(u32 addr)
     {
         return SPU.Read8(addr);
     }
+    
+    // NO$GBA debug register "Emulation ID"
+    if(addr >= 0x04FFFA00 && addr < 0x04FFFA10)
+    {
+        // FIX: GBATek says this should be padded with spaces
+        static char const emuID[16] = "melonDS " MELONDS_VERSION_BASE;
+        auto idx = addr - 0x04FFFA00;
+        return (u8)(emuID[idx]);
+    }
 
     if ((addr & 0xFFFFF000) != 0x04004000)
         Log(LogLevel::Debug, "unknown ARM7 IO read8 %08X %08X\n", addr, ARM7.R[15]);
@@ -3935,6 +3942,12 @@ u16 NDS::ARM7IORead16(u32 addr)
         return SPU.Read16(addr);
     }
 
+    // NO$GBA debug register "Emulation ID"
+    if(addr >= 0x04FFFA00 && addr < 0x04FFFA10)
+    {
+        return ((u16)ARM7IORead8(addr+1) << 8) | (u16)ARM7IORead8(addr);
+    }
+
     if ((addr & 0xFFFFF000) != 0x04004000)
         Log(LogLevel::Debug, "unknown ARM7 IO read16 %08X %08X\n", addr, ARM7.R[15]);
     return 0;
@@ -4029,11 +4042,23 @@ u32 NDS::ARM7IORead32(u32 addr)
     case 0x04100010:
         if (ExMemCnt[0] & (1<<11)) return NDSCartSlot.ReadROMData();
         return 0;
+
+    // NO$GBA debug register "Clock Cycles"
+    // Since it's a 64 bit reg. the CPU will access it in two parts:
+    case 0x04FFFA20: return (u32)(GetSysClockCycles(0) & 0xFFFFFFFF);
+    case 0x04FFFA24: return (u32)(GetSysClockCycles(0) >> 32);
+
     }
 
     if (addr >= 0x04000400 && addr < 0x04000520)
     {
         return SPU.Read32(addr);
+    }
+
+    // NO$GBA debug register "Emulation ID"
+    if(addr >= 0x04FFFA00 && addr < 0x04FFFA10)
+    {
+        return ((u32)ARM7IORead16(addr+2) << 16) | (u32)ARM7IORead16(addr);
     }
 
     if ((addr & 0xFFFFF000) != 0x04004000)
@@ -4140,6 +4165,9 @@ void NDS::ARM7IOWrite8(u32 addr, u8 val)
         else if (val == 0x80) ARM7.Halt(1);
         else if (val == 0xC0) EnterSleepMode();
         return;
+
+    // NO$GBA debug register "Char Out"
+        case 0x04FFFA1C: Log(LogLevel::Debug, "%c", char(val)); return;
     }
 
     if (addr >= 0x04000400 && addr < 0x04000520)
@@ -4438,6 +4466,33 @@ void NDS::ARM7IOWrite32(u32 addr, u32 val)
     case 0x04100010:
         if (ExMemCnt[0] & (1<<11))  NDSCartSlot.WriteROMData(val);
         return;
+
+    // NO$GBA debug register "String Out (raw)"
+    case 0x04FFFA10:
+        {
+            char output[1024] = { 0 };
+            char ch = '.';
+            for (size_t i = 0; i < 1023 && ch != '\0'; i++)
+            {
+                ch = NDS::ARM7Read8(val + i);
+                output[i] = ch;
+            }
+            Log(LogLevel::Debug, "%s", output);
+            return;
+        }
+
+    // NO$GBA debug registers "String Out (with parameters)" and "String Out (with parameters, plus linefeed)"
+    case 0x04FFFA14:
+    case 0x04FFFA18:
+        {
+            NocashPrint(1, val, 0x04FFFA18 == addr);
+
+            return;
+        }
+
+    // NO$GBA debug register "Char Out"
+        case 0x04FFFA1C: Log(LogLevel::Debug, "%c", val & 0xFF); return;
+
     }
 
     if (addr >= 0x04000400 && addr < 0x04000520)
