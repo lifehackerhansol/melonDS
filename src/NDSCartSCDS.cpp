@@ -58,7 +58,7 @@ int CartSCDS::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8
     // do not merge
     //if (CmdEncMode != 2)
     //   return CartCommon::ROMCommandStart(nds, cartslot, cmd, data, len);
-    Log(LogLevel::Warn, "SCDS: command %02X %02X %02X %02X %02X %02X %02X %02X (%d) (%08X) (%04X)\n", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7], len, cartslot.GetROMCnt(), cartslot.GetSPICnt());
+    //Log(LogLevel::Warn, "SCDS: command %02X %02X %02X %02X %02X %02X %02X %02X (%d) (%08X) (%04X)\n", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7], len, cartslot.GetROMCnt(), cartslot.GetSPICnt());
 
     switch (cmd[0])
     {
@@ -91,7 +91,7 @@ int CartSCDS::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8
         }
     case 0x34: /* SD data read request */
         {
-            Log(LogLevel::Warn, "SCDS: read 1 sector (%08X)\n", RequestedSectorAddress);
+            //Log(LogLevel::Warn, "SCDS: read 1 sector (%08X)\n", RequestedSectorAddress);
 
             if (SD)
                 SD->ReadSectors(RequestedSectorAddress++, 1, Buffer);
@@ -102,7 +102,7 @@ int CartSCDS::ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8
         }
     case 0x35: /* Flush data from SD FIFO to disk */
         {
-            Log(LogLevel::Warn, "SCDS: write 1 sector (%08X)\n", RequestedSectorAddress);
+            //Log(LogLevel::Warn, "SCDS: write 1 sector (%08X)\n", RequestedSectorAddress);
             if (SD && !SD->IsReadOnly())
                 SD->WriteSectors(RequestedSectorAddress, 1, Buffer);
 
