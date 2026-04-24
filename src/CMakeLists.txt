@@ -46,6 +46,7 @@ add_library(core STATIC
     NDS.cpp
     NDSCart.cpp
     NDSCartR4.cpp
+    NDSCartSCDS.cpp
     NDSCartTT.cpp
     Platform.h
     ROMList.h

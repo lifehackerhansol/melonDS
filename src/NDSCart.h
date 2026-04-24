@@ -403,6 +403,25 @@ private:
     u32 CurrentSDIOParameter;
 };
 
+// CartSCDS -- unlicensed SuperCard DSONE 'cart' (NDSCartSCDS.cpp)
+class CartSCDS : public CartSD
+{
+public:
+    CartSCDS(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+    ~CartSCDS() override;
+
+    void Reset() override;
+
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+
+private:
+    u8 CurrentSDIOCommand;
+    u32 RequestedSectorAddress;
+    u32 CurrentSDIOParameter;
+    u8 Buffer[512];
+};
+
 class NDSCartSlot
 {
 public:
