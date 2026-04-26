@@ -550,7 +550,8 @@ void ARM::TriggerIRQ()
 void ARMv5::PrefetchAbort()
 {
     Log(LogLevel::Warn, "ARM9: prefetch abort (%08X)\n", R[15]);
-
+    for(u32 i=0; i < 16; i++)
+        Log(LogLevel::Warn, "ARM9: R%d %08X\n", i, R[i]);
     u32 oldcpsr = CPSR;
     CPSR &= ~0xBF;
     CPSR |= 0x97;

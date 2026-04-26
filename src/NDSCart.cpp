@@ -2017,7 +2017,7 @@ void NDSCartSlot::WriteSPICnt(u16 val) noexcept
         // forcefully reset SPI hold
         SPIHold = false;
     }
-
+    Log(LogLevel::Debug, "NDSCartSlot: AUXSPI WRITE %04X\n", val);
     SPICnt = (SPICnt & 0x0080) | (val & 0xE043);
 
     // AUXSPICNT can be changed during a transfer

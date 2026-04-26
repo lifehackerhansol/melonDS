@@ -55,6 +55,8 @@ void A_UNK(ARM* cpu)
 void T_UNK(ARM* cpu)
 {
     Log(LogLevel::Warn, "undefined THUMB%d instruction %04X @ %08X\n", cpu->Num?7:9, cpu->CurInstr, cpu->R[15]-4);
+    for(u32 i=0; i < 16; i++)
+        Log(LogLevel::Warn, "ARM9: R%d %08X\n", i, cpu->R[i]);
 #ifdef GDBSTUB_ENABLED
     cpu->GdbStub.Enter(cpu->GdbStub.IsConnected(), Gdb::TgtStatus::FaultInsn, cpu->R[15]-4);
 #endif
