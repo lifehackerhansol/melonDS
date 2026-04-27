@@ -403,6 +403,22 @@ private:
     u32 CurrentSDIOParameter;
 };
 
+class CartDSX : public CartSD
+{
+public:
+    CartDSX(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+    ~CartDSX() override;
+
+    void Reset() override;
+
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+
+private:
+    u8 Buffer[512];
+    u32 FpgaAddress = 0;
+};
+
 class NDSCartSlot
 {
 public:

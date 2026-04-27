@@ -45,6 +45,7 @@ add_library(core STATIC
     Mic.cpp
     NDS.cpp
     NDSCart.cpp
+    NDSCartDSX.cpp
     NDSCartR4.cpp
     NDSCartTT.cpp
     Platform.h
