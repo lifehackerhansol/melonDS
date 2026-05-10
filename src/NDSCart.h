@@ -403,6 +403,53 @@ private:
     u32 CurrentSDIOParameter;
 };
 
+/*
+    Cartridge mode
+    Can be flash mode or SD mode
+    This changes behaviour of B7 command
+*/
+enum CartAKPHostMode {
+    AKP_MODE_FLASH = 0,
+    AKP_MODE_SD = 8
+};
+
+/*
+    SD Host mode
+    Can be "direct" or "normal"
+    When direct, the SD bus is exposed directly to the card command interface
+    When "normal", we return to using regular card interface
+*/
+enum CartAKPSDMode {
+    AKP_SD_MODE_NORMAL = 0,
+    AKP_SD_MODE_DIRECT = 1
+};
+
+// CartAKP -- unlicensed Acekard+ 'cart' (NDSCartAKP.cpp)
+class CartAKP : public CartSD
+{
+public:
+    CartAKP(std::unique_ptr<u8[]>&& rom, u32 len, u32 chipid, ROMListEntry romparams, void* userdata,
+        std::optional<FATStorage>&& sdcard = std::nullopt);
+    ~CartAKP() override;
+
+    void Reset() override;
+
+    int ROMCommandStart(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len) override;
+
+private:
+    int ROMCommandStartDSDMode(NDS& nds, NDSCart::NDSCartSlot& cartslot, const u8* cmd, u8* data, u32 len);
+    inline u32 GetAdjustedSector(u32 sector) const
+    {
+        return sector >> 9;
+    }
+
+    u8 CurrentSDIOCommand;
+    u32 RequestedSectorAddress;
+    u32 CurrentSDIOParameter;
+    CartAKPHostMode CurrentHostMode;
+    CartAKPSDMode CurrentSDMode;
+};
+
 class NDSCartSlot
 {
 public:

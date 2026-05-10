@@ -1711,7 +1711,7 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     if (1)
     {
         std::optional<FATStorage> sdcard = args && args->SDCard ? std::make_optional<FATStorage>(std::move(*args->SDCard)) : std::nullopt;
-        cart = std::make_unique<CartTT>(std::move(cartrom), cartromsize, cartid, romparams, userdata, std::move(sdcard));
+        cart = std::make_unique<CartAKP>(std::move(cartrom), cartromsize, cartid, romparams, userdata, std::move(sdcard));
     }
     else
     if (homebrew)
